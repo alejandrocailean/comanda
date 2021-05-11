@@ -18,8 +18,8 @@ class Mesa extends \Illuminate\Database\Eloquent\Model
             try {
                 $Mesas=new Mesa();
                 $Mesas->codigomesa=$datos["codigomesa"];
-                $Mesas->estado=$datos["estado"];        
-                $Mesas->ventas=$datos["ventas"];           
+                $Mesas->estado='cerrada';        
+                $Mesas->ventas=0;           
                 $guardar= $Mesas->save();
             } catch (\Throwable $th) {
                 $guardar=0;
@@ -39,11 +39,13 @@ class Mesa extends \Illuminate\Database\Eloquent\Model
             $datos['estado']==='cerrada';
             $estado->estado=$datos['estado'];
             $estado->save;
-            return 'La mesa numero: '.$datos['codigomesa'].' esta '.$datos['estado'];
+            $data=array('mesa'=>$datos['codigomesa'],'estado'=> $datos['estado']);
             
         }else {
-            return 'Esta mal el numero de mesa';
+            $data= array('estado'=> 'Esta mal el numero de mesa');
         }
+
+        return $data;
     }
 
     public function EstadoMesaMozo($datos)
@@ -53,15 +55,38 @@ class Mesa extends \Illuminate\Database\Eloquent\Model
             if ($datos['estado']!='cerrada') {
                 $estado->estado=$datos['estado'];
                 $estado->save;
-                return 'La mesa numero: '.$datos['codigomesa'].' esta '.$datos['estado'];
+                $data=array('mesa'=>$datos['codigomesa'],'estado'=>$datos['estado']);
+                
             }else {
-                return 'No tiene permiso para cerrar la mesa';
+                $data=array('estado'=> 'No tiene permiso para cerrar la mesa');
             }
             
         }else {
-            return 'Esta mal el numero de mesa';
+            $data=array('estado'=>'Esta mal el numero de mesa');
         }
+        
+        return $data;
 
+    }
+
+    public function cobrar($datos)
+    {
+        $estado=mesa::find($datos['codigomesa']);
+        if($estado!=null){
+            if ($datos['estado']==='cerrada') {
+                $estado->estado=$datos['estado'];
+                $estado->save;
+                $data=array('mesa'=>$datos['codigomesa'],'estado'=>$datos['estado']);
+                
+            }else {
+                $data=array('estado'=> 'No tiene permiso para cerrar la mesa');
+            }
+            
+        }else {
+            $data=array('estado'=>'Esta mal el numero de mesa');
+        }
+        
+        return $data;
     }
 
    public function estadisticas()
@@ -69,15 +94,22 @@ class Mesa extends \Illuminate\Database\Eloquent\Model
         $mesaestadistica=mesa::all();
         $maxVentas=0;
         $mesa=0;
+        $listado=[];
+        $i=0;
+
         foreach ($mesaestadistica as $key => $value) {
             if ($value->ventas >$maxVentas) {
                 $maxVentas=$value->ventas;
                 $mesa=$value->codigomesa;
             }
-            echo 'La mesa: '.$value->codigomesa.' vendio: '.$value->ventas.PHP_EOL;
-
+            
+            $listado[$i]='La mesa: '.$value->codigomesa.' vendio: '.$value->ventas;
+            $i++;
         }
-        echo 'La maxima venta fue la mesa: '.$mesa.' vendio: '.$maxVentas;
+        $i+=1;
+        $listado[$i]= 'La maxima venta fue la mesa: '.$mesa.' vendio: '.$maxVentas;
+
+        return $listado;
     }
     
 }

@@ -20,13 +20,13 @@ class Empleado extends \Illuminate\Database\Eloquent\Model
             $guardar= $user->save();
             $id=$user->id;
         } catch (\Throwable $th) {
-            printf($th);
+            //printf($th);
             $guardar=0;
         }
         if ($guardar==1) {
-            $newresponse="Se guardo con exito. Su ID es ".$id;
+            $newresponse=array('guardado'=>"Se guardo con exito.",'id'=>$id);
         }else {
-            $newresponse="No se pudo guardar";
+            $newresponse=array('guardado'=>"No se pudo guardar");
         }         
         return $newresponse;
     }

@@ -18,16 +18,17 @@ return function (App $app) {
         $this->post('/alta', function ($request, $response, $args) {
 
             $parsedBody = $request->getParsedBody();            
-            $respuesta=Empleado::AltaUsuario($parsedBody);            
-
-            return $response->getBody()->write( $respuesta);
+            $respuesta=Empleado::AltaUsuario($parsedBody);   
+                  
+            return $response->withJson( $respuesta);
         });
 
         //Para Login debo recibir id y clave
         $this->post('/login', function ($request, $response, $args) {
             $parsedBody = $request->getParsedBody();
-            $respuesta=Empleado::login($parsedBody);            
-            return $response->getBody()->write($respuesta);
+            $respuesta=Empleado::login($parsedBody); 
+            $data=array ('token'=> $respuesta);           
+            return $response->withJson($data);
         });
 
         $this->post('/listado', function ($request, $response, $args) {
@@ -38,14 +39,16 @@ return function (App $app) {
     });
 
     $app->group('/mesa',function() {
+
+        //Debo ingresar codigomesa
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=Mesa::AltaMesa($parsedBody);
 
             if ($respuesta==1) {
-                $newresponse=$response->getBody()->write("Se guardo con exito");
+                $newresponse=$response->withJson(array("guardado"=>"Se guardo con exito"),200);
             }else {
-                $newresponse=$response->getBody()->write("No se pudo guardar");
+                $newresponse=$response->withJson(array("guardado"=>"No se pudo guardar"),403);
             }
 
             return $newresponse;
@@ -53,18 +56,27 @@ return function (App $app) {
         
 
         $this->post('/estadomozo',function($request, $response, $args) {
-            $parsedBody=$request->getParsedBody();
+            $parsedBody=$request->getParsedBody();            
             $respuesta=Mesa::EstadoMesaMozo($parsedBody);
-            return $response->getBody()->write($respuesta);
+            
+            return $response->withJson($respuesta);
         
         })->add(Middleware::class.':mozo');
 
         $this->post('/estadosocio',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=Mesa::EstadoMesaSocio($parsedBody);
-            return $response->getBody()->write($respuesta);
+            return $response->withJson($respuesta);
         
         })->add(Middleware::class.':socio');
+
+        $this->post('/cobrar',function($request, $response, $args) {
+            $parsedBody=$request->getParsedBody();            
+            $respuesta=Mesa::cobrar($parsedBody);
+            
+            return $response->withJson($respuesta);
+
+        });
     
     }); 
 
@@ -73,13 +85,13 @@ return function (App $app) {
         $this->post('/alta', function ($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta= pedido::Orden($parsedBody);
-            return $response->getBody()->write($respuesta);
-        });
+            return $response->withJson($respuesta);
+        })->add(Middleware::class.':mozo');
 
         $this->post('/estadopedido',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=pedido::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);
+            return $response->withJson($respuesta);
         });
 
         $this->post('/mozo',function($request, $response, $args) {
@@ -89,25 +101,33 @@ return function (App $app) {
         $this->post('/bartender',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=bartender::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);  
+            return $response->withJson($respuesta);  
             
         })->add(Middleware::class.':bartender');
 
         $this->post('/cervecero',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=cervecero::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);
+            return $response->withJson($respuesta);
 
         })->add(Middleware::class.':cervecero');
 
         $this->post('/cocinero',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=cocinero::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);
+            return $response->withJson($respuesta);
             
         })->add(Middleware::class.':cocinero');
 
         $this->post('/socio',function($request, $response, $args) {
+        });
+        
+        $this->post('/prueba',function($request, $response, $args) {
+
+            $parsedBody=$request->getParsedBody();
+            $respuesta=Pedido::prueba($parsedBody);
+            //return $response->withJson($respuesta);
+
         });
 
     });
@@ -118,7 +138,7 @@ return function (App $app) {
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=cocinero::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);        
+            return $response->withJson($respuesta);        
         });
 
         $this->post('/listado',function($request, $response, $args) {
@@ -134,7 +154,7 @@ return function (App $app) {
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=bartender::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);              
+            return $response->withJson($respuesta);              
         });
 
         $this->post('/listado',function($request, $response, $args) {
@@ -146,10 +166,11 @@ return function (App $app) {
     })->add(Middleware::class.':bartender');
 
     $app->group('/cervecero',function() {
+
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=cervecero::EstadoPedido($parsedBody);
-            return $response->getBody()->write($respuesta);
+            return $response->withJson($respuesta);
         });
 
         $this->post('/listado',function($request, $response, $args) {

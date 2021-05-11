@@ -139,3 +139,4 @@
 [2021-02-09 03:02:29] UTN FRA LOGGER.INFO: metodo=POST, URI=http%3A%2F%2Flocalhost%2FComanda%2Fpublic, RUTA=cervecero%2Flistado, autoridad=localhost [] {"uid":"2e89f4b"}
 [2021-02-09 03:03:48] UTN FRA LOGGER.INFO: metodo=POST, URI=http%3A%2F%2Flocalhost%2FComanda%2Fpublic, RUTA=cervecero%2Flistado, autoridad=localhost [] {"uid":"b4424c2"}
 [2021-02-09 03:04:09] UTN FRA LOGGER.INFO: metodo=POST, URI=http%3A%2F%2Flocalhost%2FComanda%2Fpublic, RUTA=cervecero%2Flistado, autoridad=localhost [] {"uid":"464a68d"}
+[2021-05-06 23:24:48] UTN FRA LOGGER.INFO: metodo=POST, URI=http%3A%2F%2Flocalhost%2FComanda%2Fpublic, RUTA=empleado%2Flogin, autoridad=localhost [] {"uid":"27ca5b3"}

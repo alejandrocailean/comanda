@@ -8,8 +8,8 @@ class Middleware{
     
     public function bartender($request, $response,$next)
     {
-        $parsedBody=$request->getParsedBody();
-        $tokenDecodificado=AutentificadorJWT::VerificarToken($parsedBody["token"]); 
+        $params=$request->getQueryParams();
+        $tokenDecodificado=AutentificadorJWT::VerificarToken($params["token"]); 
         if(strtolower ($tokenDecodificado->data->tipo)==="bartender")        
         {
             $response = $next($request, $response);        
@@ -22,8 +22,8 @@ class Middleware{
 
     public function cervecero($request, $response,$next)
     {
-        $parsedBody=$request->getParsedBody();
-        $tokenDecodificado=AutentificadorJWT::VerificarToken($parsedBody["token"]); 
+        $params=$request->getQueryParams();
+        $tokenDecodificado=AutentificadorJWT::VerificarToken($params["token"]); 
         if(strtolower ($tokenDecodificado->data->tipo)==="cervecero")        
         {
             $response = $next($request, $response);        
@@ -36,8 +36,8 @@ class Middleware{
 
     public function cocinero($request, $response,$next)
     {
-        $parsedBody=$request->getParsedBody();
-        $tokenDecodificado=AutentificadorJWT::VerificarToken($parsedBody["token"]); 
+        $params=$request->getQueryParams();
+        $tokenDecodificado=AutentificadorJWT::VerificarToken($params["token"]); 
         if(strtolower ($tokenDecodificado->data->tipo)==="cocinero")        
         {
             $response = $next($request, $response);        
@@ -50,8 +50,8 @@ class Middleware{
 
     public function mozo($request, $response,$next)
     {
-        $parsedBody=$request->getParsedBody();
-        $tokenDecodificado=AutentificadorJWT::VerificarToken($parsedBody["token"]); 
+        $params=$request->getQueryParams();
+        $tokenDecodificado=AutentificadorJWT::VerificarToken($params["token"]); 
         if(strtolower ($tokenDecodificado->data->tipo)==="mozo")        
         {
             $response = $next($request, $response);        
@@ -64,8 +64,8 @@ class Middleware{
 
     public function socio($request, $response,$next)
     {
-        $parsedBody=$request->getParsedBody();
-        $tokenDecodificado=AutentificadorJWT::VerificarToken($parsedBody["token"]); 
+        $params=$request->getQueryParams();
+        $tokenDecodificado=AutentificadorJWT::VerificarToken($params["token"]); 
         if(strtolower ($tokenDecodificado->data->tipo)==="socio")        
         {
             $response = $next($request, $response);        
