@@ -19,76 +19,100 @@ class Pedido extends \Illuminate\Database\Eloquent\Model
 
      public function Orden($datos)
      {
-        //$empleado=AutentificadorJWT::ObtenerData($datos['token']);
+        
+        //Inicializo variables acumulativas de precio y de pedido
+        $costoTotal=0;
+        $pedidoMesa='';
+
+        // Inicializo el pedido en la BD
         try {
+
             $orden=new pedido();
             $orden->mesa=$datos["mesa"];            
-            // $orden->numEmpleado=$empleado->id;        
             $orden->estado="pendiente";            
             $orden->orden="";
             $orden->precio=0;
-            $orden->tiempoentrega=0;
+            $orden->tiempoentrega=1000000;
             $orden->foto='';
             $guardar=$orden->save();           
             $numPedido=$orden->numPedido;  
+
         } catch (\Throwable $th) {throw $th;}                
-                
+        
+        
+        //BEBIDAS
         try {
             if (array_key_exists("bebida",$datos)) {
 
-                $bebidas_ped=explode(',',$datos['bebida']); 
-                $bebida=comida::find($bebidas_ped[1]);
-                $costo_bebidas=$bebida->precio*$bebidas_ped[0];
-     
+                //Averiguo la cantidad de bebidas y me fijo en la BD el costo
+                //Ademas, guardo el total del costo y el pedido en el listado de pedidos
+
+                $bebidasPed=explode(' ',$datos['bebida']); 
+                $bebida=comida::find($bebidasPed[1]);
+                $costoBebidas=$bebida->precio*$bebidasPed[0];
+                $costoTotal+=$costoBebidas;
+                $pedidoMesa.=$bebidasPed[0].$bebidasPed[1].'  ';
+
+                //Guardo el pedido en el listado de los bartenders
                 $trago=new bartender();           
                 $trago->numPedido=$numPedido;           
                 $trago->estado='Pendiente';
-                $trago->orden=$bebidas_ped[0].' '.$bebidas_ped[1];
-                $trago->save();
-                
-             }else {
-                 $bebida= new stdClass();
-                 $bebida->precio=0;
+                $trago->orden=$bebidasPed[0].' '.$bebidasPed[1];
+                $trago->save();                
+
              }
 
         } catch (\Throwable $th) {throw $th;}        
 
+        //CERVEZAS
         try {
             if (key_exists("cerveza",$datos)) {
 
-                $cervezas_ped=explode(',',$datos['cerveza']);
-                $cervezas=comida::find($cervezas_ped[1]); 
-                $costo_cervezas=$cervezas->precio * $cervezas_ped[0];
-                
+                //Averiguo la cantidad de cervezas y me fijo en la BD el costo
+                //Ademas, guardo el total del costo y el pedido en el listado de pedidos
+
+                $cervezasPed=explode(' ',$datos['cerveza']);
+                $cervezas=comida::find($cervezasPed[1]); 
+                $costoCervezas=$cervezas->precio * $cervezasPed[0];
+                $costoTotal+=$costoCervezas;
+                $pedidoMesa.=$cervezasPed[0].$cervezasPed[1].'  ';
+               
+                //Guardo el pedido en el listado de los cerveceros
                 $cerveza=new cervecero();
                 $cerveza->numPedido=$numPedido;
                 $cerveza->estado='Pendiente';
-                $cerveza->orden=$cervezas_ped[0].' '.$cervezas_ped[1];
+                $cerveza->orden=$cervezasPed[0].' '.$cervezasPed[1];
                 $cerveza->save();
                
-            }else {
-                $cerveza= new stdClass();
-                $cerveza->precio=0;
             }
 
         } catch (\Throwable $th) {throw $th; }
         
+
+        //COMIDAS
         try {
-            $costocomidas=0; 
+            $costoComidas=0; 
             $listado='';
 
             for ($i=0; $i <count($datos) ; $i++) { 
             
                 if (key_exists('comida'.($i+1),$datos)) {
                     
-                    //comidas[0]:cantidad/comidas[1]:nombre comida
-                    $comidas=explode(',',$datos['comida'.($i+1)]);
+                    //comidas[0]:cantidad - comidas[1]:nombre comida
+                    //Averiguo la cantidad de comidas y me fijo en la BD el costo
+                    //Ademas, guardo el total del costo y el pedido en el listado de pedidos
+                    $comidas=explode(' ',$datos['comida'.($i+1)]);
                     $morfi=comida::find($comidas[1]);
-                    $costocomidas+=$morfi->precio*$comidas[0];  
+                    $costoComidas+=$morfi->precio*$comidas[0];  
                     $listado.=$comidas[0].' '. $comidas[1].', ';           
                 }  
             }
 
+            //Guardo los totales de costo y pedido
+            $costoTotal+=$costoComidas;
+            $pedidoMesa.=$listado;
+
+            //Guardo el pedido en el listado de los cocineros
             $comi=new cocinero();
             $comi->numPedido=$numPedido;
             $comi->estado='Pendiente';
@@ -97,25 +121,28 @@ class Pedido extends \Illuminate\Database\Eloquent\Model
                 
         }catch (\Throwable $th) {print(   $th);}  
 
-        $numCliente=substr($numPedido,2);
-        $costo=$bebida->precio+$cerveza->precio+$costocomidas+$costo_bebidas+$costo_cervezas;
-        $pedidomesa=$listado." ,".$datos["bebida"].", ".$datos["cerveza"];
-        
+
+        //Actualizo la BD de pedido
         try {
             $ord=pedido::find($numPedido); 
-            $ord->precio=$costo;
-            $ord->orden=$pedidomesa;
+            $ord->precio=$costoTotal;
+            $ord->orden=$pedidoMesa;
             $ord->save();
         } catch (\Throwable $th) {throw $th;}
         
+
+        //Guardo en la BD los datos de la mesa
         try {
             $mesa=mesa::find($datos["mesa"]);
-            $mesa->ventas+=$costo;
+            $mesa->ventas+=$costoTotal;
             $mesa->estado='con cliente esperando pedido';            
             $mesa->save();
         } catch (\Throwable $th) {throw $th; }        
-                
-        $datos=array('nropedido'=>$numCliente,'mesa'=>$datos["mesa"],'pedido'=>$pedidomesa,'costo'=>$costo);
+          
+        // Armo el JSON para responder
+        $numCliente='PE'.substr($numPedido,2);
+
+        $datos=array('nropedido'=>$numCliente,'mesa'=>$datos["mesa"],'pedido'=>$pedidoMesa,'costo'=>$costoTotal);
         return $datos; 
     }
 
@@ -127,47 +154,16 @@ class Pedido extends \Illuminate\Database\Eloquent\Model
        
         if ($ord!=null) {
             if ($datos['nummesa']==$ord->mesa) {
-                return 'Tiempo restante: '.$ord->tiempoentrega;
+                return array('mensaje'=>'Tiempo restante'.$ord->tiempoentrega);
             }else {
-                return 'Ingreso mal el numero de mesa';
+                return array('mensaje'=>'Ingreso mal el numero de mesa');
             }
         }else {
-            return 'Ingreso mal el numero de pedido';
+            return array('mensaje'=>'Ingreso mal el numero de pedido');
         }
         
     }
 
-
-    public function prueba ($var )
-    {        
-        
-        try {
-            $costocomidas=0; 
-            $listado='';
-
-            for ($i=0; $i <count($var) ; $i++) { 
-            
-                if (key_exists('comida'.($i+1),$var)) {
-                    
-                    $comidas=explode(',',$var['comida'.($i+1)]);
-                    $morfi=comida::find($comidas[1]);
-                    $costocomidas+=$morfi->precio*$comidas[0];    
-                    $listado.=$comidas[0].' '. $comidas[1].', ';            
-                }  
-            }
-    
-            print($costocomidas);  
-            print($listado); 
-        }
-        
-        catch (\Throwable $th) {
-           print(   $th);
-        }  
-        
-        
-        
-       
-    }
 }
 
 ?>
