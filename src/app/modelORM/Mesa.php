@@ -31,6 +31,30 @@ class Mesa extends \Illuminate\Database\Eloquent\Model
         }
             return $guardar;
     }
+  
+
+    public function EstadoMesaMozo($datos)
+    {
+
+        //FALTA VALIDAR LOS ESTADOS DE LA MESA
+        $estado=mesa::find($datos['codigomesa']);
+        if($estado!=null){
+            if ($datos['estado']!='cerrada') {
+                $estado->estado=$datos['estado'];
+                $estado->save;
+                $data=array('mesa'=>$datos['codigomesa'],'estado'=>$datos['estado'], 'mensaje'=>'La mesa '.$datos['codigomesa'].' esta '.$datos['estado']);
+                
+            }else {
+                $data=array('mensaje'=> 'No tiene permiso para cerrar la mesa');
+            }
+            
+        }else {
+            $data=array('mensaje'=>'Esta mal el numero de mesa');
+        }
+        
+        return $data;
+
+    }
 
     public function EstadoMesaSocio($datos)
     { 
@@ -48,43 +72,21 @@ class Mesa extends \Illuminate\Database\Eloquent\Model
         return $data;
     }
 
-    public function EstadoMesaMozo($datos)
-    {
-        $estado=mesa::find($datos['codigomesa']);
-        if($estado!=null){
-            if ($datos['estado']!='cerrada') {
-                $estado->estado=$datos['estado'];
-                $estado->save;
-                $data=array('mesa'=>$datos['codigomesa'],'estado'=>$datos['estado']);
-                
-            }else {
-                $data=array('estado'=> 'No tiene permiso para cerrar la mesa');
-            }
-            
-        }else {
-            $data=array('estado'=>'Esta mal el numero de mesa');
-        }
-        
-        return $data;
-
-    }
-
     public function cobrar($datos)
     {
-        $estado=mesa::find($datos['codigomesa']);
-        if($estado!=null){
-            if ($datos['estado']==='cerrada') {
-                $estado->estado=$datos['estado'];
-                $estado->save;
-                $data=array('mesa'=>$datos['codigomesa'],'estado'=>$datos['estado']);
-                
-            }else {
-                $data=array('estado'=> 'No tiene permiso para cerrar la mesa');
-            }
+        $pedido=pedido::find($datos['numpedido']);
+        
+        if($pedido!=null){
+            try {
+                $mesa=mesa::find($pedido->mesa);                
+                $mesa->estado='con clientes pagando';
+                $mesa->save();
+                // var_dump($mesa);
+            } catch (\Throwable $th) {throw $th;}
             
-        }else {
-            $data=array('estado'=>'Esta mal el numero de mesa');
-        }
+            $data=array('mesa'=>$pedido->mesa, 'monto'=>$pedido->precio, 'estadomesa'=>$mesa->estado);
+                        
+        }else {$data=array('mensaje'=>'Esta mal el numero de pedido');}
         
         return $data;
     }

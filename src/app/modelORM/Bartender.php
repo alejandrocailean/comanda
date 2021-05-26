@@ -17,36 +17,45 @@ class Bartender extends \Illuminate\Database\Eloquent\Model
     public function EstadoPedido($datos)
     {
         $numPedido='10'.substr($datos['numpedido'],2);
-        $pedi=bartender::find($numPedido);
-        if ($pedi!=null) {
-            $pedi->estado='En preparacion';
-            $pedi->save();
+        
+        try {
+            $pedi=bartender::find($numPedido);
+            if ($pedi!=null) {
+           
+                //cambio de estado del pedido
+                $pedi->estado='En preparacion';
+                $pedi->save();
+    
+                $time=pedido::find($numPedido);
+                $time->tiempoentrega=$datos['tiempoentrega'];
+                $time->estado='En preparacion';
+                $time->save();
 
-            $time=pedido::find($numPedido);
-            $time->tiempoentrega=$datos['tiempoentrega'];
-            $time->estado='En preparacion';
-            $time->save();
+                return array('mensaje'=>'El pedido de '.$pedi->orden.' esta en preparacion');
 
-            return 'El pedido de '.$pedi->orden.' esta en preparacion';
-        }else {
-            return 'Mal el numero de pedido';
-        }
+            }else {return array('mensaje'=>'Mal el numero de pedido');}
+
+        } catch (\Throwable $th) {throw $th;}
+            
+
+           
+        
 
     }
     
     public function Listado()
     {
-        $list=bartender::all();        
-        $cer=[];
+        //Traigo el listado de pedidos filtrando por pendiente
+        $list=bartender::where('estado', 'Pendiente')->get();          
+        $bar=[];
         $i=0;
         
         foreach ($list as $key => $value) {
-             
-            $cer[$i]="Pedido Nro: ".$value->numPedido.' Estado: '.$value->estado.' Orden: '.$value->orden;
-            $i++;         
+            $bar[$i]=array( "Pedido"=>$value->numPedido,'Estado'=>$value->estado,'Orden'=>$value->orden);
+            $i++;    
         }
         
-        return $cer;
+        return $bar;
     }
      
 }

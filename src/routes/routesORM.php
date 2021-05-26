@@ -14,7 +14,7 @@ return function (App $app) {
 
     $app->group('/empleado',function() {
 
-        //Para Alta de Usuario debo recibir nombre, clave y tipo
+        //Para Alta de Usuario debo recibir dni, nombre, clave y tipo
         $this->post('/alta', function ($request, $response, $args) {
 
             $parsedBody = $request->getParsedBody();            
@@ -23,12 +23,11 @@ return function (App $app) {
             return $response->withJson( $respuesta);
         });
 
-        //Para Login debo recibir id y clave
+        //Para Login debo recibir dni y clave
         $this->post('/login', function ($request, $response, $args) {
             $parsedBody = $request->getParsedBody();
             $respuesta=Empleado::login($parsedBody); 
-            $data=array ('token'=> $respuesta);           
-            return $response->withJson($data);
+            return $response->withJson($respuesta);
         });
 
         $this->post('/listado', function ($request, $response, $args) {
@@ -70,14 +69,15 @@ return function (App $app) {
         
         })->add(Middleware::class.':socio');
 
+        //debo recibir codigomesa, numpedido
         $this->post('/cobrar',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();            
             $respuesta=Mesa::cobrar($parsedBody);
             
             return $response->withJson($respuesta);
 
-        });
-    
+        })->add(Middleware::class.':mozo');
+        
     }); 
 
     $app->group('/pedido',function() {
@@ -94,47 +94,13 @@ return function (App $app) {
             return $response->withJson($respuesta);
         });
 
-        $this->post('/mozo',function($request, $response, $args) {
-            
-        });
-
-        $this->post('/bartender',function($request, $response, $args) {
-            $parsedBody=$request->getParsedBody();
-            $respuesta=bartender::EstadoPedido($parsedBody);
-            return $response->withJson($respuesta);  
-            
-        })->add(Middleware::class.':bartender');
-
-        $this->post('/cervecero',function($request, $response, $args) {
-            $parsedBody=$request->getParsedBody();
-            $respuesta=cervecero::EstadoPedido($parsedBody);
-            return $response->withJson($respuesta);
-
-        })->add(Middleware::class.':cervecero');
-
-        $this->post('/cocinero',function($request, $response, $args) {
-            $parsedBody=$request->getParsedBody();
-            $respuesta=cocinero::EstadoPedido($parsedBody);
-            return $response->withJson($respuesta);
-            
-        })->add(Middleware::class.':cocinero');
-
-        $this->post('/socio',function($request, $response, $args) {
-        });
         
-        $this->post('/prueba',function($request, $response, $args) {
-
-            $parsedBody=$request->getParsedBody();
-            $respuesta=Pedido::prueba($parsedBody);
-            //return $response->withJson($respuesta);
-
-        });
-
     });
     
     
     $app->group('/cocinero',function() {
 
+        //debo recibir los valores de las variables numpedido y tiempoentrega
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=cocinero::EstadoPedido($parsedBody);
@@ -151,6 +117,7 @@ return function (App $app) {
 
     $app->group('/bartender',function() {
 
+        //debo recibir los valores de las variables numpedido y tiempoentrega
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=bartender::EstadoPedido($parsedBody);
@@ -167,6 +134,7 @@ return function (App $app) {
 
     $app->group('/cervecero',function() {
 
+        //debo recibir los valores de las variables numpedido y tiempoentrega
         $this->post('/alta',function($request, $response, $args) {
             $parsedBody=$request->getParsedBody();
             $respuesta=cervecero::EstadoPedido($parsedBody);

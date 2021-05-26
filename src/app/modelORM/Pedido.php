@@ -51,7 +51,7 @@ class Pedido extends \Illuminate\Database\Eloquent\Model
                 $bebida=comida::find($bebidasPed[1]);
                 $costoBebidas=$bebida->precio*$bebidasPed[0];
                 $costoTotal+=$costoBebidas;
-                $pedidoMesa.=$bebidasPed[0].$bebidasPed[1].'  ';
+                $pedidoMesa.=$bebidasPed[0].' '.$bebidasPed[1].'  ';
 
                 //Guardo el pedido en el listado de los bartenders
                 $trago=new bartender();           
@@ -75,7 +75,7 @@ class Pedido extends \Illuminate\Database\Eloquent\Model
                 $cervezas=comida::find($cervezasPed[1]); 
                 $costoCervezas=$cervezas->precio * $cervezasPed[0];
                 $costoTotal+=$costoCervezas;
-                $pedidoMesa.=$cervezasPed[0].$cervezasPed[1].'  ';
+                $pedidoMesa.=$cervezasPed[0].' '.$cervezasPed[1].'  ';
                
                 //Guardo el pedido en el listado de los cerveceros
                 $cerveza=new cervecero();
@@ -104,7 +104,7 @@ class Pedido extends \Illuminate\Database\Eloquent\Model
                     $comidas=explode(' ',$datos['comida'.($i+1)]);
                     $morfi=comida::find($comidas[1]);
                     $costoComidas+=$morfi->precio*$comidas[0];  
-                    $listado.=$comidas[0].' '. $comidas[1].', ';           
+                    $listado.=$comidas[0].' '. $comidas[1].' ';           
                 }  
             }
 

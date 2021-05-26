@@ -8,54 +8,59 @@ include_once __DIR__ . '/../modelORM/AutentificadorJWT.php';
 include_once __DIR__ . '/../modelORM/Login.php';
 
 class Empleado extends \Illuminate\Database\Eloquent\Model
-{ 
+{
+    protected $primaryKey='dni';
+
+
    //Para Alta de Usuario debo recibir nombre, clave y tipo
     public function AltaUsuario($datos)
     {   
         try {
             $user=new Empleado();
+            $user->nombre=$datos["dni"];
             $user->nombre=$datos["nombre"];
             $user->clave=$datos["clave"];        
             $user->tipo=$datos["tipo"];           
             $guardar= $user->save();
-            $id=$user->id;
+            
         } catch (\Throwable $th) {
-            //printf($th);
+            printf($th);
             $guardar=0;
         }
         if ($guardar==1) {
-            $newresponse=array('guardado'=>"Se guardo con exito.",'id'=>$id);
+            $newresponse=array('mensaje'=>"Se guardo con exito");
         }else {
-            $newresponse=array('guardado'=>"No se pudo guardar");
+            $newresponse=array('mensaje'=>"No se pudo guardar");
         }         
         return $newresponse;
     }
     
     public function Login($datos)
     {        
-        $user=Empleado::find($datos["id"]);          
+        $user=Empleado::find($datos["dni"]);          
         $newresponse=0;
         
         if ($user!=null) {
             if($user->clave===$datos["clave"]){
                 $datosJWT=[
-                    "id"=>$user->id,
+                    "dni"=>$user->dni,
                     "clave"=>$user->clave,  
                     "tipo"=>$user->tipo                  
                 ];
             
-                $newresponse=  AutentificadorJWT::CrearToken($datosJWT);
-            
+                $token= AutentificadorJWT::CrearToken($datosJWT);
+                $newresponse=array('token'=>$token);
+
                 //Guardo sus logueos
                 $log= new login();
-                $log->id=$datos["id"];            
+                $log->dni=$datos["dni"];            
                 $log->save();
 
             }else {
-                $newresponse="Esta mal la clave";
+                $newresponse=array('mensaje'=>"Esta mal la clave");
             }
         }else {
-            $newresponse="no se encontro ID: ".$datos["id"];
+            $newresponse=array('mensaje'=>"No se encontro Dni: ".$datos["dni"]);
         }
         
         return $newresponse;
@@ -66,15 +71,15 @@ class Empleado extends \Illuminate\Database\Eloquent\Model
     {
         $user=empleado::find($leg);
         try {
-            $user->nombre=$datos["nombre"];
+            $user->nombre=$datos["dni"];
             $user->tipo=$datos["tipo"];            
             $user->save();
             
-            return "Empleado ID: ".$leg." se modifico con exito";
+            return array('mensaje'=>"Empleado Dni: ".$leg." se modifico con exito");
 
         } catch (\Throwable $th) {
 
-            return "no se pudo modficar";
+            return array('mensaje'=>"No se pudo modficar");
 
         }  
 
@@ -86,7 +91,7 @@ class Empleado extends \Illuminate\Database\Eloquent\Model
         $log=[];
         $datos= Login::whereBetween('created_at', [$empleado['fec_ini'], $empleado['fec_fin']])->get();
         foreach ($datos as $key => $value) {
-            $fulano=Empleado::find($value->id);
+            $fulano=Empleado::find($value->dni);
             if ($fulano->nombre===$empleado['nombre']) {
                 for ($i=0; $i <count($datos) ; $i++) { 
                     $log[$i]=$fulano->nombre.' se logueo el:'.$value->created_at;
